@@ -26,7 +26,7 @@ func main() {
 	server_socket_port := viper.GetString(constants.SERVER_SOCKET_PORT_NAME)
 	server_socket_type := viper.GetString(constants.SERVER_SOCKET_TYPE_NAME)
 
-	serverConnection, err = net.Dial(server_socket_type, fmt.Sprintf("%s:%s", server_socket_host, server_socket_port))
+	serverConnection, err = net.Dial(server_socket_type, fmt.Sprintf("%v:%v", server_socket_host, server_socket_port))
 
 	if err != nil {
 		log.Printf("Error connecting: %v\n", err)
@@ -51,7 +51,7 @@ func main() {
 		case constants.SOCKET_PAYLOAD_OPERATION_TYPE_GET:
 			err = operations.GetClient(socketRequestPayload)
 		default:
-			fmt.Println("Invalid operation type, try again")
+			log.Printf("Invalid operation type, try again")
 			continue
 		}
 
