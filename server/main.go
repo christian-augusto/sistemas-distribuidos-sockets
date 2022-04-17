@@ -27,7 +27,7 @@ func main() {
 	server_socket_port := viper.GetString(constants.SERVER_SOCKET_PORT_NAME)
 	server_socket_type := viper.GetString(constants.SERVER_SOCKET_TYPE_NAME)
 
-	server, err = net.Listen(server_socket_type, fmt.Sprintf("%s:%s", server_socket_host, server_socket_port))
+	server, err = net.Listen(server_socket_type, fmt.Sprintf("%v:%v", server_socket_host, server_socket_port))
 
 	if err != nil {
 		log.Fatalln(err)
@@ -56,25 +56,25 @@ func main() {
 func handleClientConnection(clientConnection net.Conn) {
 	for {
 		var err error
-		var bufferSize int
+		var requestPayloadBytesLen int
 		var requestPayloadBytes = make([]byte, 1024)
 		var responsePayloadBytes []byte
 
-		bufferSize, err = clientConnection.Read(requestPayloadBytes)
-
-		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
-			log.Printf("Client bufferSize: %d\n", bufferSize)
-		}
+		requestPayloadBytesLen, err = clientConnection.Read(requestPayloadBytes)
 
 		if err != nil {
 			log.Printf("Error in read client message: %v\n", err)
 			return
 		}
 
-		requestPayloadBytes = requestPayloadBytes[:bufferSize]
+		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
+			log.Printf("Client requestPayloadBytesLen: %v\n", requestPayloadBytesLen)
+		}
+
+		requestPayloadBytes = requestPayloadBytes[:requestPayloadBytesLen]
 
 		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
-			log.Printf("Client message: %s\n", requestPayloadBytes)
+			log.Printf("Client message: %v\n", string(requestPayloadBytes))
 		}
 
 		requestPayload := inputs.NewSocketRequestPayload()
@@ -103,13 +103,13 @@ func handleClientConnection(clientConnection net.Conn) {
 
 		responsePayloadBytes, err = json.Marshal(responsePayload)
 
-		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
-			log.Printf("responsePayload: %v\n", string(responsePayloadBytes))
-		}
-
 		if err != nil {
 			log.Printf("Error in creates json response: %v\n", err)
 			return
+		}
+
+		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
+			log.Printf("responsePayload: %v\n", string(responsePayloadBytes))
 		}
 
 		clientConnection.Write(responsePayloadBytes)
