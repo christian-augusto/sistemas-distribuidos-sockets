@@ -73,5 +73,7 @@ func main() {
 			log.Printf("Error in write message: %v\n", err)
 			continue
 		}
+
+		// TODO: pegar resposta do servidor
 	}
 }
