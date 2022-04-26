@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -56,25 +57,22 @@ func main() {
 func handleClientConnection(clientConnection net.Conn) {
 	for {
 		var err error
-		var requestPayloadBytesLen int
-		var requestPayloadBytes = make([]byte, 1024)
+		var requestPayloadBytes []byte
 		var responsePayloadBytes []byte
 
-		requestPayloadBytesLen, err = clientConnection.Read(requestPayloadBytes)
+		requestPayloadBytes, err = bufio.NewReader(clientConnection).ReadBytes('\n')
 
 		if err != nil {
-			log.Printf("Error in read client message: %v\n", err)
+			log.Printf("Error in read client request: %v\n", err)
 			return
 		}
 
 		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
-			log.Printf("Client requestPayloadBytesLen: %v\n", requestPayloadBytesLen)
+			log.Printf("Client requestPayloadBytes len: %v\n", len(requestPayloadBytes))
 		}
 
-		requestPayloadBytes = requestPayloadBytes[:requestPayloadBytesLen]
-
 		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
-			log.Printf("Client message: %v\n", string(requestPayloadBytes))
+			log.Printf("Client request: %v\n", string(requestPayloadBytes))
 		}
 
 		requestPayload := inputs.NewSocketRequestPayload()
@@ -82,7 +80,7 @@ func handleClientConnection(clientConnection net.Conn) {
 		err = json.Unmarshal(requestPayloadBytes, requestPayload)
 
 		if err != nil {
-			log.Printf("Error in parse client message: %v\n", err)
+			log.Printf("Error in parse client request: %v\n", err)
 			return
 		}
 
@@ -102,6 +100,7 @@ func handleClientConnection(clientConnection net.Conn) {
 		responsePayload := outputs.NewSocketResponsePayload(client)
 
 		responsePayloadBytes, err = json.Marshal(responsePayload)
+		responsePayloadBytes = append(responsePayloadBytes, []byte("\n")...)
 
 		if err != nil {
 			log.Printf("Error in creates json response: %v\n", err)
