@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -21,6 +22,7 @@ func main() {
 	var err error
 	var serverConnection net.Conn
 	var requestPayloadBytes []byte
+	var responsePayloadBytes []byte
 	socketRequestPayload := outputs.NewSocketRequestPayload()
 	server_socket_host := viper.GetString(constants.SERVER_SOCKET_HOST_NAME)
 	server_socket_port := viper.GetString(constants.SERVER_SOCKET_PORT_NAME)
@@ -61,6 +63,7 @@ func main() {
 		}
 
 		requestPayloadBytes, err = json.Marshal(socketRequestPayload)
+		requestPayloadBytes = append(requestPayloadBytes, []byte("\n")...)
 
 		if err != nil {
 			log.Printf("Error in creates json request: %v\n", err)
@@ -70,10 +73,23 @@ func main() {
 		_, err = serverConnection.Write(requestPayloadBytes)
 
 		if err != nil {
-			log.Printf("Error in write message: %v\n", err)
+			log.Printf("Error in write response: %v\n", err)
 			continue
 		}
 
-		// TODO: pegar resposta do servidor
+		responsePayloadBytes, err = bufio.NewReader(serverConnection).ReadBytes('\n')
+
+		if err != nil {
+			log.Printf("Error in read server response: %v\n", err)
+			return
+		}
+
+		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
+			log.Printf("Server responsePayloadBytes len: %v\n", len(responsePayloadBytes))
+		}
+
+		if viper.GetString(constants.LOGS_NAME) == constants.BOOLEAN_TRUE_ENV_VALUE {
+			log.Printf("Server response: %v\n", string(responsePayloadBytes))
+		}
 	}
 }
