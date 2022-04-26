@@ -9,7 +9,6 @@ const LOGS_NAME = "LOGS"
 const BOOLEAN_TRUE_ENV_VALUE = "true"
 
 const DEVELOPMENT_ENV_VALUE = "development"
-const DEVELOPMENT_DOCKER_ENV_VALUE = "development-docker"
 const PRODUCTION_ENV_VALUE = "production"
 
 const SOCKET_PAYLOAD_OPERATION_TYPE_CREATE = "create"
